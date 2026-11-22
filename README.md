@@ -48,6 +48,8 @@ Open http://127.0.0.1:5000 in your browser. The map on the Dashboard page needs 
 
 ## Credits
 
-This project is a simplified and restructured version of the open-source
-[Street-Issue-Tracker by M-Rehan-S](https://github.com/M-Rehan-S/Street-Issue-Tracker) (MIT License).
-The trained model `model/model.tflite` comes from that project.
+## Credits
+
+Developed by **Varsha Nenwani, Bushra Batool, and Shanzay Rizwan** as part of the AL-2001 Programming for AI course.
+
+This project is our own implementation of an AI-based street issue reporting system, developed collaboratively by our team.
