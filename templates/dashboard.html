@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+{% block content %}
+<div class="stats">
+  <div class="card"><h2>{{ stats.total }}</h2>Total</div>
+  <div class="card"><h2>{{ stats.pending }}</h2>Pending</div>
+  <div class="card"><h2>{{ stats.in_progress }}</h2>In Progress</div>
+  <div class="card"><h2>{{ stats.resolved }}</h2>Resolved</div>
+</div>
+
+<div class="card">
+  <h2>Analytics</h2>
+  {% if has_charts %}
+    <div class="charts">
+      <img src="{{ url_for('static', filename='charts/status.png') }}?v={{ stats.total }}{{ stats.resolved }}{{ stats.pending }}" alt="status chart">
+      <img src="{{ url_for('static', filename='charts/priority.png') }}?v={{ stats.total }}{{ stats.resolved }}{{ stats.pending }}" alt="priority chart">
+    </div>
+  {% else %}
+    <p>No data yet. Submit a report first.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Map</h2>
+  <div id="map"></div>
+</div>
+
+<script>
+var markers = {{ markers | tojson }};
+var map = L.map("map").setView([24.8607, 67.0011], 11);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap" }).addTo(map);
+markers.forEach(function (m) { L.marker([m.lat, m.lon]).addTo(map).bindPopup(m.label); });
+if (markers.length > 0) {
+  map.fitBounds(markers.map(function (m) { return [m.lat, m.lon]; }), { maxZoom: 15 });
+}
+</script>
+{% endblock %}

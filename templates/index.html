@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Report a street issue</h2>
+  {% if result %}
+    <p class="msg {% if not result.ok %}error{% endif %}">{{ result.message }}</p>
+    {% if result.duplicates %}
+      <ul>
+        {% for d in result.duplicates %}
+          <li>Report #{{ d.report_id }} ({{ d.location }}) - {{ d.distance_m }} m away</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+  <form method="POST" action="{{ url_for('report') }}" enctype="multipart/form-data">
+    <label>Road image</label>
+    <input type="file" name="image" accept="image/*" required>
+    <div class="row">
+      <div><label>Latitude</label><input type="text" name="latitude" id="latitude" placeholder="24.8607" required></div>
+      <div><label>Longitude</label><input type="text" name="longitude" id="longitude" placeholder="67.0011" required></div>
+    </div>
+    <button type="button" onclick="useMyLocation()">Use my current location</button>
+    <label>Location (area / road name)</label>
+    <input type="text" name="location" placeholder="e.g. Main Road near school">
+    <label>Description (optional)</label>
+    <textarea name="description" rows="3" placeholder="e.g. Deep pothole, dangerous for bikes at night"></textarea>
+    <button type="submit">Submit report</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>All reports</h2>
+  <form method="GET" class="row">
+    <div>
+      <label>Status</label>
+      <select name="status">
+        <option value="">All</option>
+        {% for s in statuses %}<option value="{{ s }}" {% if s == selected_status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Priority</label>
+      <select name="level">
+        <option value="">All</option>
+        {% for l in ['High', 'Medium', 'Low'] %}<option value="{{ l }}" {% if l == selected_level %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+    </div>
+    <div><button type="submit">Filter</button></div>
+  </form>
+  <table>
+    <tr><th>Photo</th><th>Location</th><th>Category</th><th>Priority</th><th>Date</th><th>Status</th></tr>
+    {% for r in reports %}
+    <tr>
+      <td><img src="{{ url_for('uploaded_file', filename=r.image_path) }}" alt="report"></td>
+      <td>{{ r.location }}<br><small>{{ r.description }}</small></td>
+      <td>{{ r.issue_category }} ({{ r.confidence }}%)</td>
+      <td>{{ r.priority_score }} ({{ r.priority_level }})</td>
+      <td>{{ r.timestamp }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('update_status', report_id=r.report_id) }}">
+          <select name="status" onchange="this.form.submit()">
+            {% for s in statuses %}<option value="{{ s }}" {% if s == r.status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+          </select>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">No reports yet.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<script>
+function useMyLocation() {
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    document.getElementById("latitude").value = pos.coords.latitude;
+    document.getElementById("longitude").value = pos.coords.longitude;
+  }, function () { alert("Could not get location. Please type it manually."); });
+}
+</script>
+{% endblock %}
